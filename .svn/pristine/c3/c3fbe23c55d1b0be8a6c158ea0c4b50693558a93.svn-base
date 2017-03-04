@@ -1,0 +1,126 @@
+"""
+@file: python/wcsfit/runwcsfit.py
+@author: user
+@date: 03/11/16
+"""
+#
+# History
+# Jun 17, 2016 (OH,KG): Now compatible with CCD and Quadrants handling
+# Mar 18, 2016 (CG): replaced --binpath with --imcore_path and --wcsfits_path
+
+import argparse
+import ElementsKernel.Logging as log
+
+import wcsfit
+
+def defineSpecificProgramOptions():
+    """
+    @brief Allows to define the (command line and configuration file) options
+    specific to this program
+    
+    @details
+        See the Elements documentation for more details.
+    @return
+        An  ArgumentParser.
+    """
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-q', action='store_true', 
+                        help='process the image without merging quadrants')
+    parser.add_argument('--async', action='store_true', 
+                        help='perform astrometric calibration asynchronously')
+    parser.add_argument('--copy', action='store_true', 
+                        help='copy input file before modification')
+    parser.add_argument('--nocat', action='store_true', 
+                        help='skip catalogue generation')
+    parser.add_argument('--refcat',
+                        help='reference catalogue')
+    parser.add_argument('--cattype', default='6', 
+                        help='catalogue type to generate (3=basic, 6=long)')
+    parser.add_argument('--weight', 
+                        help='weight map')
+    parser.add_argument('--imcore_path', 
+                        help='CASUtools imcore path')
+    parser.add_argument('--wcsfit_path', 
+                        help='CASUtools wcsfit path')
+    parser.add_argument('--image', 
+                        help='FITS image')
+
+    return parser
+
+
+def mainMethod(args):
+    """
+    @brief The "main" method.
+    @details
+        This method is the entry point to the program. In this sense, it is 
+        similar to a main (and it is why it is called mainMethod()).
+    """
+
+    logger = log.getLogger('runwcsfit')
+
+    logger.info('#')
+    logger.info('# Entering runwcsfit mainMethod()')
+    logger.info('#')
+    
+    IMCORE=args.imcore_path
+    WCSFIT=args.wcsfit_path
+    
+    if args.copy:
+        shutil.copy(args.image, 'w%s' % args.image)
+        input = 'w%s' % args.image
+    else:
+        input = args.image
+        
+    if args.q:
+        fitQuadrants = True
+    else:
+        fitQuadrants = False
+
+    # Check number of extensions and merge quadrants into ccd image if necessary
+    nExtensions = wcsfit.getNumberOfExtensions(input)
+    if not fitQuadrants:
+        wcsfit.mergeQuadrants(input)
+        input = input.replace('.fit', '_ccd.fit')
+
+    if not args.nocat:
+        wcsfit.initAstrometry(input, moreKeys=True)
+        logger.info('running astrometric calibration on %s' % input)
+        if args.weight.find('noconf')==-1:
+            confmap = wcsfit.weightToConf(input, args.weight)
+        else:
+            confmap = args.weight
+        if wcsfit.run_imcore(input, IMCORE, confmap=confmap, cattype = args.cattype):
+            logger.error('imcore failed')
+            sys.exit(1)
+        else:
+            logger.info('imcore success')
+        
+    # We may run the fitting individually for each chip [BETA TEST]
+    # Better to move this block to another function e.g. runWcsfitAsync
+    if args.async:
+        a = []
+        for i in range(nExtensions):
+            a.append(wcsfit.run_wcsfit(input, args.refcat, WCSFIT, extno=i+1, async=True))
+        p = map(lambda x: x.poll(), a)
+        while p.count(None)>0:
+            j = p.index(None)
+            a[j].wait()
+            p = map(lambda x: x.poll(), a)
+        if p.count(0)!=nExtensions:
+            logger.error('wcsfit failed')
+        else:
+            logger.info('wcsfit success')
+    else:
+        if wcsfit.run_wcsfit(input, args.refcat, WCSFIT):
+            logger.error('wcsfit failed')
+        else:
+            logger.info('wcsfit success')
+
+    wcsfit.print_summary(input)
+
+
+    logger.info('#')
+    logger.info('# Exiting runwcsfit mainMethod()')
+    logger.info('#')

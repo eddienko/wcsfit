@@ -1,0 +1,36 @@
+from optparse import OptionParser
+import subprocess
+import time
+
+class WcsFit():
+    def __init__(self, image, catalogue):
+        self.image = image
+        self.catalogue = catalogue
+        
+    def run(self):
+        args = ["echo", "Running Astrometric Calibration on: ", self.image, " with ", self.catalogue]
+        subprocess.call(args)
+        time.sleep(10)
+        args = ["echo", "Done."]
+        subprocess.call(args)
+
+def getArgs():
+    """
+    Processes command line arguments.
+    """
+    parser = OptionParser()
+
+    parser.add_option('-i', '--image', dest='image',
+                      help="Input image", metavar='string')
+
+    parser.add_option('-c', '--cat', dest='catalogue',
+                      help="Input catalogue", metavar='string')
+    
+    return parser.parse_args()
+    
+if __name__ == '__main__':
+    opts, args = getArgs()
+    
+    wcsfit = WcsFit(opts.image, opts.catalogue)
+    wcsfit.run()
+    

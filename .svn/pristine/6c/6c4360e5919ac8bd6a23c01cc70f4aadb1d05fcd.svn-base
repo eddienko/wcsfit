@@ -1,0 +1,2 @@
+cd /sps/euclid/Users/eglez/v1
+python wcsfit.py VIS_sim-nep_distort_1_ccd.fits NEP-stars-v1.cat_SED.ldac

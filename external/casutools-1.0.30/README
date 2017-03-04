@@ -1,0 +1,282 @@
+The configure script takes a number of arguments. Doing:
+
+% ./configure --help
+
+will give you a list. The most important are:
+
+(1) --with-cfitsio and --with-wcs Use these to specify the path to the
+    cfitsio and wcslib distributions. (Usually something like /usr/local).
+
+(2) --prefix Use this to specify where you want the binaries to be installed.
+    If you say nothing they will be installed in the top level of the 
+    distribution tree in a directory called 'bin'. You then have to make
+    sure to include this in your PATH.
+
+An example installation of my own is the following:
+
+% gunzip -c casutools-1.0.30.tar.gz | tar -xvf -
+
+% cd casutools-1.0.30
+
+% ./configure --with-cfitsio=/usr/local --with-wcs=/usr/local
+<Lots of output....>
+
+% make
+<Lots more output...>
+
+% make install
+<More output>
+
+% ls
+aclocal.m4	 config.h.in	 configure.ac  Makefile     README
+autom4te.cache/  config.log	 depcomp*      Makefile.am  src/
+bin/		 config.status*  install-sh*   Makefile.in  stamp-h1
+config.h	 configure*	 m4macros/     missing*
+
+% ls bin
+classify*  grout*   imcore_list*  mosaic*     ungrout*    wcsfit*
+dribble*   imcore*  imstack*      nebuliser*  vstpickup*
+
+Some documentation on running these programs is available at:
+http://casu.ast.cam.ac.uk/surveys-projects/software-release/software-release/view
+
+JRL 20140731
+
+================================================================================
+20141103:
+          Tagged as v1.0.30
+
+          Modified wcsfit.c so that there is now a magnitude cut in the 
+          standard star list if there are too many.
+
+20140808: 
+          Tagged as v1.0.29
+
+          Added the nbsize <= 0 option to imcore_list
+
+20140731: 
+          Tagged as v1.0.28
+
+          Fixed imcore so that nbsize <= 0 gives a constant background.
+          Also fixed long standing problem in imcore_list where the 
+          equatorial coordinates in the output catalogue are in degrees
+          rather than radians as advertised
+
+20140718:
+          Tagged as v1.0.27
+
+          The ell file in imcore_list now places the objects at the original
+          coordinate location rather than in the location where the detection
+          algorithm _thinks_ there might be an object.
+
+20140610:
+          wcsfit now checks to see if there are any rows in the input
+          catalogue. If there aren't then we just get a non-fatal 
+          error message and moves onto the next extension.
+
+20130530: 
+	  Tagged as v1.0.26
+
+	  Fixed bug in vstpickup_main.c affecting one of the error
+	  messages.
+
+	  Added vstfix
+
+	  Removed extraneous declaration in casu_wcs.h
+
+20130207:
+	  Tagged as v1.0.25
+
+	  Fixed bug in the projection part of the WCS routines in 
+	  cir_imstack_cat.c and cir_mosaic.c which was caused by crpix
+	  being exact integers
+
+20121208:
+	  Tagged as v1.0.24
+20121207:  
+	  Added vstpickup
+
+20121205:
+          Fixed cir_classify so that it traps for WFCAM data and modifies
+	  the moffat profile exponent. Also fixed grout and ungrout so that
+	  you can't accidently repeat the procedure
+
+20121001:
+	  Tagged as v1.0.23
+
+20121001:
+	  Fixed bug in cir_mosaic affecting zeropoint. Fixed duplicate
+	  column names in imcore create_table_1.c
+
+20120904: Tagged as v1.0.22
+
+20120904: Fixed small memory leak in mosaic
+
+20120813:
+          Fixed a bug in imcore_main that causes the routine to barf if
+	  the output file doesn't have a filename extension (eg .fit). Fixed
+	  outloc in cir_imstack_cat and cir_mosaic so that the zpn is 
+	  calculated correctly. Added PPMXL to list of astrometric 
+	  catalogues in wcsfit.
+
+20120720:
+	  Fixed a bug in some of the sort routines
+
+20120509: 
+	  Fixed nebuliser so that any tables in the input FITS file just
+	  get copied to the output file. Also stole some code from ESO so
+	  that the autoconf now checks whether cfitsio has been configured
+	  for threads.
+
+20120119: Tagged as v1.0.21
+
+20120119: Added new ungrout routine
+
+20120104:
+          Fixed aperture correction routines ap67 and ap0 in cir_classify to
+	  provide sensible minimum values of sigma
+
+20111105:
+	  Fixed small bug in cir_imstack_cat.c in calculation of overlap region
+
+20111101:
+          Added tabtag to create_table.c in imcore. This creates a keyword
+	  called CATTYPE in the primary that tells you which catalogue
+	  type option was used when imcore was run
+
+20110916: Tagged as v1.0.20
+
+20110916: Fixed scaling bug in cir_imstack_cat.c
+	  Added code to cir_getstds to weed out entries outside the
+	  defined box, which helps greatly near the poles
+
+20110627: Tagged as v1.0.19
+
+20110627: imstack now takes input files that are simple FITS images. The
+	  limitation is that all input images must be either simple or MEF --
+	  we can't mix the two.
+
+20110609: Tagged as v1.0.18
+
+20110609: nebuliser now adds keyword NEBULSED to output headers. Fixed a 
+	  small bug in wcsopen to deal with the situation where no 
+	  WCS has been parsed. grout now adds keywords in the primary header
+	  that tell something about the QC of the pawprints that went
+	  into the tile.
+
+20110214: Tagged as v1.0.17
+
+20110214: Fixed bug in cir_classify which affected the calculation of
+	  the curvature of the stellar locus
+
+20110211: Tagged as v1.0.16
+
+20110211: Fixed memory bug in grout_main.c
+
+20110205: Tagged as v1.0.15
+
+20110203: Fixed minor bug imcore create_table_6.c to cater for old style
+	  FITS WCS keywords.
+
+20110131: Modifications to grout to add MJD info to catalogues and allow the
+	  creation of an MJD map. Modified casu_wcs.c again to fix parsing bug
+	  for wfcam catalogue headers.
+
+20110121: Tagged as v1.0.13
+
+20110119: Fixed options menu in headers of some main routines. Fixed small
+	  bug in cir_classify.c to get position angle in range [0,180].
+
+20110118: Small tweak to cir_classify.c
+
+20110114: Tagged as v1.0.12
+
+20110114: Small modifications to cir_classify.c to remove a small chance of
+	  a seg fault. casu_wcs.c modified so that wcslib opens headers in a
+	  different way for tables and images
+
+20110112: Modified classify to do a better job on some aperture corrections and
+	  to output a median position angle. Bug fixed in grout which could
+	  cause NULL values in the output table. Other smaller bugs fixed.
+
+20101210: Modified imcore_background.c so that the routine backstats does a
+	  better job of working out the statistics in the case of an image
+	  with high background counts and low noise.
+
+20101123: Tagged as v1.0.11
+
+20101123: Added classify
+
+20101122: Tagged as v1.0.10
+
+20101122: Added dribble and grout
+
+20101102: Tagged as v1.0.9
+
+20101002: Fixed the way nebuliser opens its output files as the previous
+	  version didn't like changing data types.
+
+20101101: Tagged as v1.0.8
+
+20101101: Fixed bug in imcore_main_list which affected noconf option. Fixed
+	  misc.c so that creating a file copies the template data over in
+	  cases where the array sizes haven't changed. Fixed long standing
+	  bug in imcore_list where position errors can be null.
+
+20101029: Tagged as v1.0.7
+
+20101029: Changed how provenance is added to headers so that directory
+	  names are stripped off. Also fixed bug in provenance routines
+	  to stop keyword values from being overrun by extra long filenames
+
+20101005: A few simple fixes to imcore routines to remove the chance of 
+	  uninitialised values being accessed. Also modified cir_wcsopen to
+	  use a different wcslib parsing routine.
+
+20101001: Tagged as v1.0.6
+
+20101001: Added NICOMB header keywords to output of imstack
+
+20100921: Added verbose output to nebuliser and mosaic. Fixed bug in mosaic
+	  affecting the reading of confidence maps when only 1 is present.
+	  Forced output images from nebuliser to be both uncompressed and 
+	  floating point even if the input is integer.
+
+20100920: Fixed memory leak in imstack 
+
+20100919: tagged as version 1.0.5
+
+20100919: Fixed a bug affecting nebuliser. Added section in imstack_main to 
+	  deal with missing extensions. Fixed a few typos.
+
+20100906: tagged as version 1.0.4
+
+20100906: Tidied up some documentation
+
+20100905: Added nebuliser and mosaic applications
+
+20100827: Made changes in imcore to allow NBSIZE to be written to output
+	  headers
+
+20100806: tagged as version 1.0.3
+
+20100806: Fixed dodgy calloc in imcore_overlp and wrote workaround to problem
+	  with wcspih. 
+
+20100805: tagged as version 1.0.2
+
+20100805: Fixed bug in wcsfit so that simple FITS images are dealt with
+	  properly
+
+20100802: tagged as version 1.0.1
+
+20100730: Modifications to automake files. System includes modified to
+	  help with build on Mac.
+
+20100729: Mods to imcore source to fix headers in tables that come from 
+	  images that are simple FITS files. Basically the header of the 
+	  image wasn't being copied to the table extension of the catalogue.
+	  Fixed bug that arose when the "noconf" option is used. Fixed spacing
+	  in some Makefile.am files.
+
+20100127: Version 1.0.0 released

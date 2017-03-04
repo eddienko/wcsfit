@@ -1,0 +1,221 @@
+Help on module wcsfit:
+
+NAME
+    wcsfit - Implement astrometric fit to Euclid OU-VIS Images.
+
+FILE
+    /Volumes/Promise Pegasus/Data/euclid/AstrometricCalibration/prototype/wcsfit.py
+
+DESCRIPTION
+    Given an image and a reference catalogue, extract objects from the image
+    and solve the astrometric distortion.
+    
+    Author(s)
+    ----------
+    
+    2016 Eduardo Gonzalez-Solares
+    
+    Changelog
+    ----------
+    
+    TODO
+    
+     - Better handling of cases with no stars or not enough stars
+     - Star/Galaxy separation
+     - We may want to let the software decide if it should fit the PV coefficients
+       base e.g. on the number of stars
+    
+    201611
+    
+     - Star/Galaxy separation (partially done for imcore)
+     - Compute offset between catalogues now using FFT
+     - When fitting affine transformation provide estimation on success before 
+       updating a solution
+     - When fitting PV provide estimation on success before updating a solution
+     - Added experimental Python based source extractor.
+    
+    201610
+    
+     - Nearest neighbour distribution used to compute optimum match radius.
+     - Polynomial of distortion defined to have 12 elements per axis (3 degrees). 
+       Added option to change it when initializing.
+     - Added check of astrometry RMS in order to end iteration.
+     - Removed need for wcsfit from casutools. Dependency on imcore still present.
+       Probably needs some bug squishing for cases with no stars in detector, etc.
+     - Reworked most of the run_wcsfit function.
+     - Allow to fit full astrometric model for dense fields removing the need of
+       using SCAMP.
+     - Added CCDImage class to drive the fitting
+     - Dropped support for running in quadrants only.
+     - Dropped multithreading support.
+
+CLASSES
+    __builtin__.object
+        CCDImage
+    
+    class CCDImage(__builtin__.object)
+     |  Class to deal with astrometry of Euclid CCD images.
+     |  
+     |  Methods defined here:
+     |  
+     |  __enter__(self)
+     |  
+     |  __exit__(self, type, value, traceback)
+     |  
+     |  __init__(self, image_name, weight_map=None, mode='readonly', save_backup=False, npv=12)
+     |      Initialize the class. Note that errors are not fully handled, i.e., 
+     |      it is the user responsability to feed a valid FITS file.
+     |      
+     |      Parameters
+     |      -----------
+     |      
+     |      image_name: string
+     |          name of MEF image
+     |      
+     |      weight_map: string, optional
+     |          name of MEF weight map. Set to None for no weight map
+     |      
+     |      mode: string, optional
+     |          readonly or update
+     |      
+     |      save_backup: bool, optional
+     |          if True and mode='update' save a backup before updating
+     |      
+     |      npv: integer, optional
+     |          number of distortion elements to fit
+     |  
+     |  add_astrometric_distortion(self, config)
+     |      Add astrometric distortion model to the header. This function reads the 
+     |      astrometric model (i.e. PV keywords) from a configuration file and updates
+     |      the header accordingly.
+     |  
+     |  close(self)
+     |  
+     |  find_stars(self, catalogue_name=None, cattype='imcore', extension=1)
+     |      Find stars on image.
+     |      
+     |      Parameters
+     |      -----------
+     |      
+     |      catalogue_name: string, optional
+     |          file name of extracted catalogue
+     |      
+     |      cattype: string, optional
+     |          type of catalogue (imcore|sextractor|python)
+     |      
+     |      extension: integer, optional
+     |          catalogue extension to read
+     |  
+     |  fit_astrometry(self, refcat=None, wcsconf='wcsfit.conf', fitpv=False)
+     |      Covenience function to run all commands to fit the astrometry to an 
+     |      image.
+     |      
+     |      Parameters
+     |      ----------
+     |      
+     |      refcat: string
+     |           name of the catalogue containing reference stars
+     |      
+     |      wcsconf: string
+     |          file containing astrometric model parameters
+     |      
+     |      fitpv: bool
+     |          fit the model distortion coefficients
+     |  
+     |  init_astrometry(self, centre='ccd', more_keys=False)
+     |      Initialise the astrometric keywords in the headers and optionally allocate space for more keywords.
+     |      This function only moves the reference point to the centre of each CCD. See function
+     |      add_astrometric_distortion to add the astrometric model.
+     |      
+     |      Parameters
+     |      ----------
+     |      
+     |      centre: location of the reference point. Either in the centre of each CCD or in the centre of the FPA.
+     |  
+     |  update_model(self, config='wcsfit.conf')
+     |  
+     |  wcsfit(self, refcat=None, niter=100, fitpv=False, maxstars=None, tol=0.0001)
+     |      Fit astrometry model.
+     |      
+     |      Parameters
+     |      ----------
+     |      
+     |      refcat: reference astrometric catalogue
+     |      
+     |      niter: number of iterations to perform
+     |      
+     |      fitpv: if True refine the astrometric model.
+     |      
+     |      maxstars: maximum number of reference stars used for the match 
+     |      
+     |      tol: tolerance value to stop iteration loop
+     |  
+     |  writeto(self, output, **kwargs)
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data descriptors defined here:
+     |  
+     |  __dict__
+     |      dictionary for instance variables (if defined)
+     |  
+     |  __weakref__
+     |      list of weak references to the object (if defined)
+     |  
+     |  reference_catalogue
+
+FUNCTIONS
+    check_exe_in_path()
+        Check that imcore executable is available. It must be given 
+        either in the IMCORE environment variable or present in PATH.
+    
+    check_wcslib()
+        Try to determine wcslib version.
+    
+    extract_extension(input, output, nhdu, **kwargs)
+        Extract a extension from a MEF a write to output.
+    
+    get_number_of_extensions(input)
+        Return number of extensions in a FITS file
+    
+    imcore(image_name, confmap='noconf')
+        Extract objects from image using imcore.
+        
+        TODO: Possibly replace this by some other method (?). Need to take
+        into account PSF shape for centroiding.
+        
+        Parameters
+        ----------
+        
+        image_name: name of input image
+        
+        confmap: name of confidence map, either 'noconf' to not use a map,
+                 'auto' to look for one called image_conf.fit or name.
+        
+        cattype: type of catalogue to generate. Just leave the default.
+    
+    mad lambda x
+        # Median Absolute Deviation
+    
+    merge_quadrants(input, append='_ccd', overwrite=False)
+        Given an input image containing quadrants (image.fit), produce
+        an image containing CCDs (image_ccd.fit)
+    
+    print_summary(input)
+        Print a summary of results from astrometric fit.
+    
+    weight_to_conf(input, confmap)
+        Convert weight map to 100 median and integer as required by IMCORE.
+
+DATA
+    ERROR = 1
+    IMCORE = None
+    OK = 0
+    STATUS = 0
+    __version__ = 201611
+    console = <logging.StreamHandler object>
+    logger = <logging.Logger object>
+
+VERSION
+    201611
+
+

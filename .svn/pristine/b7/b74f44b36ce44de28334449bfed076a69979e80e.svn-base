@@ -1,0 +1,11 @@
+AUTOMAKE_OPTIONS = 1.8 foreign
+
+ACLOCAL_AMFLAGS = -I m4macros
+
+DISTCLEANFILES = *~
+
+SUBDIRS = src
+
+EXTRA_DIST = m4macros/casu.m4 README 
+
+

@@ -1,0 +1,10 @@
+
+On LODEEN 1.1-1
+===============
+
+$ cd casutools-1.0.30
+$ ./configure [--prefix=<prefix>] --with-cfitsio=/usr --with-wcs=/usr
+$ make
+$ make install
+
+

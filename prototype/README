@@ -1,0 +1,28 @@
+The wcsfit.py script performs astrometric calibration on a full focal plane image made either form 144 quadrants or 36 chips (extensions). If the input image is 144 quadrants, these are merged into 36 chips prior to performing the astrometric calibration.
+
+Usage of the script is obtained typing 'python wcsfit.py -h'
+
+usage: wcsfit.py [-h] [-q] [--async] [--nocat] image refcat
+
+Perform astrometric calibration.
+
+positional arguments:
+  image       FITS image
+  refcat      Catalogue with reference stars
+
+optional arguments:
+  -h, --help  show this help message and exit
+  -q          process the image without merging quadrants
+  --async     perform astrometric calibration asynchronously
+  --nocat     skip catalogue generation
+
+A wcsfit_example.qsub file is also provided to submit this as a job to the queue. To run it:
+
+qsub -P P_euclid -l sps=1 wcsfit_example.qsub 
+
+On completion the scripts produces a catalogue of objects detected and updates each extensions with the astrometric WCS. It also adds two new keywords to each extension:
+
+NUMBRMS = Number of objects used to fit the astrometric model
+WCSRMS = RMS of the fit in arcsec
+
+
